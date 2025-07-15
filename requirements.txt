@@ -1,0 +1,30 @@
+# --- FastAPI Backend & Server ---
+fastapi[all]  # Includes FastAPI, Uvicorn, Pydantic, etc.
+
+# --- LangChain, Google AI & Vector DB ---
+langchain
+langchain-community
+langchain-google-genai
+google-generativeai
+chromadb             # The vector store for RAG
+python-dotenv        # For loading the .env.local file
+
+# --- Multi-Modal Document Loaders (from rag_pipeline.py) ---
+requests             # For downloading files from URLs
+
+# For PDF files
+pypdf
+
+# For Word documents
+python-docx
+
+# For Excel and CSV files
+openpyxl
+pandas
+
+# For PowerPoint presentations
+python-pptx
+
+# For Image processing and OCR
+Pillow
+pytesseract
