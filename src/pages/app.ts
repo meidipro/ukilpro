@@ -27,6 +27,7 @@ export async function renderAppPage(container: HTMLElement) {
     const DIFY_REVIEWER_API_KEY = import.meta.env.VITE_DIFY_REVIEWER_API_KEY;
     const DIFY_GENERAL_API_KEY = import.meta.env.VITE_DIFY_GENERAL_API_KEY;
     const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY;
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
     const GUEST_STORAGE_KEY = 'legalAI.guestChats';
     const GUEST_USER_ID_KEY = 'legalAI.guestUserId';
 
@@ -379,7 +380,7 @@ export async function renderAppPage(container: HTMLElement) {
             // VVV THIS IS THE FIX VVV
             const { data, error } = await supabase
                 .from('chats')
-                .select('id, title, has_document') // <<< FIX: Request the new column
+                .select('id, title, has_document, dify_conversation_id')
                 .order('created_at', { ascending: false });
             // ^^^ THIS IS THE FIX ^^^
 
@@ -626,7 +627,8 @@ export async function renderAppPage(container: HTMLElement) {
 
     async function analyzeDocument(userId: string, filename: string): Promise<string> {
         try {
-            const response = await fetch(`http://localhost:8000/analyze-document/${userId}`, {
+            // Use environment variable for API URL
+            const response = await fetch(`${BACKEND_URL}/api/analyze-document/${userId}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ filename }),
@@ -642,7 +644,7 @@ export async function renderAppPage(container: HTMLElement) {
 
         } catch (error) {
             console.error('Error during analysis:', error);
-            throw error; // Re-throw the error to be caught by the caller
+            throw error;
         }
     }
 
@@ -655,7 +657,6 @@ export async function renderAppPage(container: HTMLElement) {
         const messageInput = document.getElementById('message-input') as HTMLInputElement;
         const originalButtonContent = sendButton.innerHTML;
 
-        // --- Start of controlled UI state ---
         sendButton.innerHTML = `<div class="loader"></div>`;
         sendButton.disabled = true;
         messageInput.disabled = true;
@@ -666,7 +667,6 @@ export async function renderAppPage(container: HTMLElement) {
         }
         const activeChat = getActiveChat();
         if (!activeChat) {
-            // Reset UI on error
             sendButton.innerHTML = originalButtonContent;
             sendButton.disabled = false;
             messageInput.disabled = false;
@@ -675,10 +675,10 @@ export async function renderAppPage(container: HTMLElement) {
         }
 
         try {
-            // Step 1: Upload the file
+            // Use environment variable for API URL
             const formData = new FormData();
             formData.append('file', file);
-            const uploadResponse = await fetch(`http://localhost:8000/upload-document/${userIdentifier}`, {
+            const uploadResponse = await fetch(`${BACKEND_URL}/api/upload-document/${userIdentifier}`, {
                 method: 'POST',
                 body: formData,
             });
@@ -688,9 +688,8 @@ export async function renderAppPage(container: HTMLElement) {
                 throw new Error(`Upload failed: ${errorData.detail || 'Unknown error'}`);
             }
             
-            await uploadResponse.json(); // Consume the response body
-            
-            // Update chat state and persist
+            await uploadResponse.json();
+
             activeChat.has_document = true;
             if (isGuestMode) {
                 localStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify(appState));
@@ -698,15 +697,12 @@ export async function renderAppPage(container: HTMLElement) {
                 await supabase.from('chats').update({ has_document: true }).eq('id', activeChat.id);
             }
 
-            // Step 2: Notify user and start analysis
             displayMessage(`📄 **${file.name}** uploaded. Now analyzing...`, 'ai');
             messageInput.placeholder = "Analyzing document...";
             renderSidebar();
 
-            // Step 3: Call and wait for analysis to complete
             const analysisResult = await analyzeDocument(userIdentifier, file.name);
 
-            // Step 4: Display the analysis result
             displayMessage(analysisResult, 'ai');
 
         } catch (error) {
@@ -714,8 +710,7 @@ export async function renderAppPage(container: HTMLElement) {
             const errorMessage = `Error: ${error instanceof Error ? error.message : 'An unknown error occurred. Please try again.'}`;
             displayMessage(errorMessage, 'ai');
         } finally {
-            // --- End of controlled UI state: Reset UI ---
-            target.value = ''; // Clear the file input
+            target.value = '';
             sendButton.innerHTML = originalButtonContent;
             sendButton.disabled = false;
             messageInput.disabled = false;
