@@ -1,4 +1,4 @@
-# backend.py
+# api/backend.py
 
 import os
 import shutil
@@ -10,8 +10,9 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-# Import your powerful RAG engine
-from rag_pipeline import MultiModalRAGPipeline
+# --- THIS IS THE UPDATED LINE ---
+# It now correctly imports from the 'py_src' package.
+from py_src.rag_pipeline import MultiModalRAGPipeline
 
 # --- Configuration and Initialization ---
 
