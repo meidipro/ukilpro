@@ -1,30 +1,23 @@
 # --- FastAPI Backend & Server ---
-fastapi[all]  # Includes FastAPI, Uvicorn, Pydantic, etc.
+fastapi
+uvicorn
+python-dotenv
+python-multipart
 
 # --- LangChain, Google AI & Vector DB ---
-langchain
 langchain-community
 langchain-google-genai
 google-generativeai
-chromadb             # The vector store for RAG
-python-dotenv        # For loading the .env.local file
+chromadb
+langchain-text-splitters
+langchain-core
 
-# --- Multi-Modal Document Loaders (from rag_pipeline.py) ---
-requests             # For downloading files from URLs
-
-# For PDF files
+# --- Document Loaders ---
+requests
 pypdf
-
-# For Word documents
 python-docx
-
-# For Excel and CSV files
 openpyxl
 pandas
-
-# For PowerPoint presentations
 python-pptx
-
-# For Image processing and OCR
 Pillow
 pytesseract
