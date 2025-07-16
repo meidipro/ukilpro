@@ -1,7 +1,0 @@
-# Ignore frontend build artifacts and local data from the backend bundle
-/dist
-/node_modules
-/user_dbs
-/user_uploads
-/src
-/public
