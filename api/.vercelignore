@@ -1,0 +1,6 @@
+# This file tells Vercel what to exclude ONLY from the Python function bundle.
+# We ignore the frontend source and build artifacts.
+dist
+node_modules
+public
+src
